@@ -24,25 +24,28 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Accept Android SDK licenses
+        run: yes | sdkmanager --licenses
+
       - name: Install Android SDK and NDK
         run: |
           sdkmanager "platforms;android-29" \
             "build-tools;29.0.3" \
             "ndk;23.1.7779620"
-          yes | sdkmanager --licenses || true
 
       - name: Extract project
         run: |
-          mkdir source
-          ZIP="$(find . -maxdepth 1 -name '*.zip' -print -quit)"
+          mkdir -p source
+          ZIP="$(find . -maxdepth 1 -type f -name '*.zip' -print -quit)"
           test -n "$ZIP"
           unzip -q "$ZIP" -d source
           find source -name gradlew -type f
 
       - name: Build APK
         run: |
-          PROJECT="$(dirname "$(find source -name gradlew -type f -print -quit)")"
-          test -n "$PROJECT"
+          WRAPPER="$(find source -name gradlew -type f -print -quit)"
+          test -n "$WRAPPER"
+          PROJECT="$(dirname "$WRAPPER")"
           cd "$PROJECT"
           chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
